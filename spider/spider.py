@@ -61,10 +61,15 @@ class u2spider(spider):
     def __init__(self, cookie, headless=True, dtLoadPicture=True, disableGPU=True):
         super().__init__(headless=headless, dtLoadPicture=dtLoadPicture, disableGPU=disableGPU)
         self.cookie = cookie
-        self.get_torrent_page()
+        print("Getting torrent page...")
+        url = "https://u2.dmhy.org/torrents.php"
+        self.browser.get(url)
+        for cookie in self.cookie:
+            self.browser.add_cookie(cookie)
+        self.browser.get(url)
 
     def get_torrent_page(self):
-        print("Getting url...")
+        print("Getting torrent page...")
         url = "https://u2.dmhy.org/torrents.php"
         self.browser.get(url)
         for cookie in self.cookie:
@@ -73,7 +78,7 @@ class u2spider(spider):
 
     def parse_page(self):
         self.parse_note()
-        self.parse_page()
+        self.parse_torrents()
         pass
 
     def parse_note(self):
@@ -86,6 +91,15 @@ class u2spider(spider):
         soup = BeautifulSoup(self.browser.page_source, "lxml")
         # all notes with 魔法
         note_list_all = soup.select("td[class='shoutrow']")[0].find_all(self.my_tag)
+        note_list = [None] * len(note_list_all)
+        for i in range(len(note_list_all)):
+            note_list[i] = note_list_all[i].select("bdo")[0].text
+            pass
+
+        print("魔法：")
+        for i in note_list:
+            print("  {0}".format(i))
+            pass
 
         self.browser.switch_to.default_content()
         # note_list = note_list.find_e
@@ -93,12 +107,10 @@ class u2spider(spider):
 
     @staticmethod
     def my_tag(tag):
-        # if tag.name == "div":
-        #     a = tag.select("bdo")[0].text
         return tag.name == "div" and re.match("魔法使", tag.select("bdo")[0].text)
 
     def parse_torrents(self):
-        torrent_list = self.browser.find_element_by_class_name("torrents").find_element_by_tag_name("tbody").find_elements_by_xpath("./*")
+        # torrent_list = self.browser.find_element_by_class_name("torrents").find_element_by_tag_name("tbody").find_elements_by_xpath("./*")
         pass
 
 
