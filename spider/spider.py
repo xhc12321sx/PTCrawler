@@ -71,6 +71,33 @@ class u2spider(spider):
             self.browser.add_cookie(cookie)
         self.browser.get(url)
 
+    def parse_page(self):
+        self.parse_note()
+        self.parse_page()
+        pass
+
+    def parse_note(self):
+        refresh = self.browser.find_element_by_id("sh_refresh")
+        refresh.click()
+
+        iframe = self.browser.find_element_by_id("scrollee").find_element_by_tag_name("iframe")
+        self.browser.switch_to.frame(iframe)
+
+        soup = BeautifulSoup(self.browser.page_source, "lxml")
+        # all notes with 魔法
+        note_list_all = soup.select("td[class='shoutrow']")[0].find_all(self.my_tag)
+
+        self.browser.switch_to.default_content()
+        # note_list = note_list.find_e
+        pass
+
+    @staticmethod
+    def my_tag(tag):
+        # if tag.name == "div":
+        #     a = tag.select("bdo")[0].text
+        return tag.name == "div" and re.match("魔法使", tag.select("bdo")[0].text)
+
+    def parse_torrents(self):
         torrent_list = self.browser.find_element_by_class_name("torrents").find_element_by_tag_name("tbody").find_elements_by_xpath("./*")
         pass
 
@@ -93,5 +120,6 @@ if __name__ == "__main__":
                 "value": "668a2ede564b45e05daa400b17d288ec983642f1a64626bd79a2ce222aecd5ce624612cbae43aa6b0e7cd0bddd3281a1",
             }
             ]
-    a = u2spider(headless=True, dtLoadPicture=False, cookie=cookie)
+    a = u2spider(headless=False, dtLoadPicture=False, cookie=cookie)
+    a.parse_page()
     pass
